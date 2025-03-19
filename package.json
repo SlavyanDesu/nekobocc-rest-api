@@ -1,12 +1,13 @@
 {
-  "name": "elysia",
-  "version": "1.0.50",
+  "name": "nekobocc-rest-api",
+  "version": "1.0.0",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
-    "elysia": "latest"
+    "elysia": "latest",
+    "nekobocc": "^1.5.0"
   },
   "devDependencies": {
     "bun-types": "latest"
