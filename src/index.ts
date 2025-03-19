@@ -4,26 +4,27 @@ import NekoBocc from 'nekobocc';
 const nekobocc = new NekoBocc();
 const app = new Elysia().get('/', 'Server is online');
 
-const getRandom = async () => {
-  return await nekobocc.random();
+const isError = (error: unknown): error is Error => error instanceof Error;
+
+const safeCall = async (fn: (...args: any[]) => Promise<any>, ...args: any[]) => {
+  try {
+    return await fn(...args);
+  } catch (error) {
+    const message = isError(error) ? error.message : 'Unknown error';
+
+    const statusCode = 'status' in (error as any) ? (error as any).status : 500;
+
+    return {
+      error: message,
+      code: statusCode,
+    };
+  }
 };
 
-const getHentai = async (url: string) => {
-  return await nekobocc.get(url);
-};
+app.get('/random', () => safeCall(nekobocc.random));
+app.get('/get', ({ query }) => safeCall(nekobocc.get, query.url));
+app.get('/release', ({ query }) => safeCall(nekobocc.release, Number(query.page)));
+app.get('/search', ({ query }) => safeCall(nekobocc.search, query.q));
 
-const getRelease = async (page: number) => {
-  return await nekobocc.release(page);
-};
-
-const getSearch = async (query: string) => {
-  return await nekobocc.search(query);
-};
-
-app.get('/random', getRandom);
-app.get('/get', ({ query }) => getHentai(query.url));
-app.get('/release', ({ query }) => getRelease(Number(query.page)));
-app.get('/search', ({ query }) => getSearch(query.q));
-
-app.listen(3000)
-console.log(`Server is running at ${app.server?.hostname}:${app.server?.port}`);
+app.listen(3000);
+console.log(`Server is running at http://${app.server?.hostname}:${app.server?.port}`);
