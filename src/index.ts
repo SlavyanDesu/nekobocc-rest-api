@@ -1,30 +1,20 @@
 import { Elysia } from 'elysia';
 import NekoBocc from 'nekobocc';
+import { safeCall } from './helper';
 
 const nekobocc = new NekoBocc();
-const app = new Elysia().get('/', 'Server is online');
+const app = new Elysia();
 
-const isError = (error: unknown): error is Error => error instanceof Error;
+app.get('/', () => ({ message: 'API is online' }));
 
-const safeCall = async (fn: (...args: any[]) => Promise<any>, ...args: any[]) => {
-  try {
-    return await fn(...args);
-  } catch (error) {
-    const message = isError(error) ? error.message : 'Unknown error';
+app.get('/random', async () => safeCall(null, nekobocc.random));
 
-    const statusCode = 'status' in (error as any) ? (error as any).status : 500;
+app.get('/get', async ({ query }) => safeCall('string', nekobocc.get, query.url));
 
-    return {
-      error: message,
-      code: statusCode,
-    };
-  }
-};
+app.get('/release', async ({ query }) => safeCall('number', nekobocc.release, query.page));
 
-app.get('/random', () => safeCall(nekobocc.random));
-app.get('/get', ({ query }) => safeCall(nekobocc.get, query.url));
-app.get('/release', ({ query }) => safeCall(nekobocc.release, Number(query.page)));
-app.get('/search', ({ query }) => safeCall(nekobocc.search, query.q));
+app.get('/search', async ({ query }) => safeCall('string', nekobocc.search, query.q));
 
-app.listen(3000);
+app.listen(Bun.env.PORT || 3000);
+
 console.log(`Server is running at http://${app.server?.hostname}:${app.server?.port}`);
