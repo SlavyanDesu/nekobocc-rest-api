@@ -15,6 +15,6 @@ app.get('/release', async ({ query }) => safeCall('number', nekobocc.release, qu
 
 app.get('/search', async ({ query }) => safeCall('string', nekobocc.search, query.q));
 
-app.listen(Bun.env.PORT || 3000);
+app.listen(Bun.env.PORT ?? 3000);
 
 console.log(`Server is running at http://${app.server?.hostname}:${app.server?.port}`);
